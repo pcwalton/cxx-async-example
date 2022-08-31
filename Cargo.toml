@@ -1,0 +1,22 @@
+[package]
+name = "cxx-async-example"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4"
+
+[dependencies.cxx]
+version = "1"
+features = ["c++20"]
+
+[dependencies.cxx-async]
+# TODO: move this to crates.io once cxx-async is on there.
+git = "https://github.com/pcwalton/cxx-async"
+
+[build-dependencies]
+cxx-build = "1"
+find-folly = "0.1"
