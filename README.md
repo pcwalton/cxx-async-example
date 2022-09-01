@@ -6,7 +6,9 @@ This is a minimal example server to demonstrate [`cxx-async`](https://github.com
 
 The logic lives in `src/main.rs` and `src/coroutine_example.cpp`.
 
-## Running this example
+## Building and running this example
+
+First, make sure that you have a C++20-capable compiler such as Clang installed, as well as [Folly](https://github.com/facebook/folly). You can probably get both through your system's package manager, such as Homebrew or Apt. Then:
 
     $ cargo run
     Running `target/debug/cxx-async-example`
