@@ -6,11 +6,12 @@
 #include <cstdint>
 #include <vector>
 
+#include "cxx-async-example/src/main.rs.h"
 #include "rust/cxx.h"
-#include "rust/cxx_async.h"
 
-CXXASYNC_DEFINE_FUTURE(rust::Vec<uint8_t>, RustFutureVecU8);
-
-RustFutureVecU8 reencode_jpeg_async(rust::Slice<const uint8_t> jpeg_data);
+void reencode_jpeg_async(
+    rust::Slice<const uint8_t> jpeg_data,
+    rust::Fn<void(rust::Box<CallbackContext>, rust::Vec<uint8_t>)> callback,
+    rust::Box<CallbackContext> context);
 
 #endif

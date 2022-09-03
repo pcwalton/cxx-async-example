@@ -8,14 +8,11 @@ build = "build.rs"
 
 [dependencies]
 actix-web = "4"
+futures = "0.3"
 
 [dependencies.cxx]
 version = "1"
 features = ["c++20"]
-
-[dependencies.cxx-async]
-# TODO: move this to crates.io once cxx-async is on there.
-git = "https://github.com/pcwalton/cxx-async"
 
 [build-dependencies]
 cxx-build = "1"

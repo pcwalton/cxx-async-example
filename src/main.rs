@@ -4,29 +4,39 @@
 
 use actix_web::web::Bytes;
 use actix_web::{post, App, HttpServer, Responder};
-use std::future::Future;
+use futures::channel::oneshot::{self, Sender};
 use std::io::Result as IoResult;
 
 // The `cxx` bridge that declares the asynchronous function we want to call.
 #[cxx::bridge]
 mod ffi {
+    extern "Rust" {
+        type CallbackContext;
+    }
+
     unsafe extern "C++" {
         include!("coroutine_example.h");
-        type RustFutureVecU8 = crate::RustFutureVecU8;
-        fn reencode_jpeg_async(jpeg_data: &[u8]) -> RustFutureVecU8;
+        fn reencode_jpeg_async(
+            jpeg_data: &[u8],
+            callback: fn(Box<CallbackContext>, result: Vec<u8>),
+            context: Box<CallbackContext>,
+        );
     }
 }
 
-// The `cxx_async` bridge that defines the future we want to return.
-#[cxx_async::bridge]
-unsafe impl Future for RustFutureVecU8 {
-    type Output = Vec<u8>;
-}
+pub struct CallbackContext(Sender<Vec<u8>>);
 
-// Our REST endpoint, which calls the C++ coroutine.
+// Our REST endpoint, which calls the asynchronous C++ function.
 #[post("/convert")]
 async fn convert(jpeg_data: Bytes) -> impl Responder {
-    ffi::reencode_jpeg_async(&jpeg_data).await.unwrap()
+    let (sender, receiver) = oneshot::channel();
+    let context = Box::new(CallbackContext(sender));
+    ffi::reencode_jpeg_async(
+        &jpeg_data,
+        |context, encoded| drop(context.0.send(encoded)),
+        context,
+    );
+    receiver.await.unwrap()
 }
 
 // The server entry point.
