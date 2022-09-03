@@ -7,10 +7,7 @@
 #include <vector>
 
 #include "rust/cxx.h"
-#include "rust/cxx_async.h"
 
-CXXASYNC_DEFINE_FUTURE(rust::Vec<uint8_t>, RustFutureVecU8);
-
-RustFutureVecU8 reencode_jpeg_async(rust::Slice<const uint8_t> jpeg_data);
+rust::Vec<uint8_t> reencode_jpeg(rust::Slice<const uint8_t> jpeg_data);
 
 #endif

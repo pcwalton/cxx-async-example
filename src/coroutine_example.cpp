@@ -2,24 +2,18 @@
 //
 // A minimal practical example of `cxx-async` usage.
 
-#define FOLLY_HAS_COROUTINES 1
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include "coroutine_example.h"
 #include "stb_image.h"
 #include "stb_image_write.h"
-#include <folly/Executor.h>
-#include <folly/executors/CPUThreadPoolExecutor.h>
-#include <folly/experimental/coro/Task.h>
 #include <cstdint>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
-folly::Executor::KeepAlive<folly::CPUThreadPoolExecutor> g_thread_pool(
-    new folly::CPUThreadPoolExecutor(8));
-
-folly::coro::Task<rust::Vec<uint8_t>> reencode_jpeg(rust::Slice<const uint8_t> jpeg_data)
+// Synchronously reencodes a JPEG to PNG.
+rust::Vec<uint8_t> reencode_jpeg(rust::Slice<const uint8_t> jpeg_data)
 {
     // Load the JPEG image.
     int width, height, channels;
@@ -51,11 +45,6 @@ folly::coro::Task<rust::Vec<uint8_t>> reencode_jpeg(rust::Slice<const uint8_t> j
     // Clean up and return the decoded PNG to Rust.
     close(fd);
     unlink(tmpPath);
-    co_return encodedPNG;
-}
 
-// Asynchronously reencodes a JPEG to PNG via a thread pool.
-RustFutureVecU8 reencode_jpeg_async(rust::Slice<const uint8_t> jpeg_data)
-{
-    co_return co_await reencode_jpeg(std::move(jpeg_data)).semi().via(g_thread_pool);
+    return encodedPNG;
 }
