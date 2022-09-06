@@ -15,11 +15,12 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#include <vector>
 
 folly::Executor::KeepAlive<folly::CPUThreadPoolExecutor> g_thread_pool(
     new folly::CPUThreadPoolExecutor(8));
 
-folly::coro::Task<rust::Vec<uint8_t>> reencode_jpeg(rust::Slice<const uint8_t> jpeg_data)
+folly::coro::Task<rust::Vec<uint8_t>> reencode_jpeg(std::vector<const uint8_t> jpeg_data)
 {
     // Load the JPEG image.
     int width, height, channels;
@@ -57,5 +58,7 @@ folly::coro::Task<rust::Vec<uint8_t>> reencode_jpeg(rust::Slice<const uint8_t> j
 // Asynchronously reencodes a JPEG to PNG via a thread pool.
 RustFutureVecU8 reencode_jpeg_async(rust::Slice<const uint8_t> jpeg_data)
 {
-    co_return co_await reencode_jpeg(std::move(jpeg_data)).semi().via(g_thread_pool);
+    co_return co_await reencode_jpeg(std::vector(jpeg_data.begin(), jpeg_data.end()))
+        .semi()
+        .via(g_thread_pool);
 }
