@@ -17,7 +17,7 @@
 boost::asio::thread_pool g_thread_pool(8);
 
 void reencode_jpeg(
-    rust::Slice<const uint8_t> jpeg_data,
+    std::vector<const uint8_t> jpeg_data,
     rust::Fn<void(rust::Box<CallbackContext>, rust::Vec<uint8_t>)> callback,
     rust::Box<CallbackContext> context)
 {
@@ -61,11 +61,12 @@ void reencode_jpeg_async(
     rust::Fn<void(rust::Box<CallbackContext>, rust::Vec<uint8_t>)> callback,
     rust::Box<CallbackContext> context)
 {
+    std::vector<const uint8_t> data(jpeg_data.begin(), jpeg_data.end());
     boost::asio::post(g_thread_pool, [
-        jpeg_data,
+        data = std::move(data),
         callback = std::move(callback),
         context = std::move(context)
     ]() mutable {
-        reencode_jpeg(jpeg_data, std::move(callback), std::move(context));
+        reencode_jpeg(std::move(data), std::move(callback), std::move(context));
     });
 }
